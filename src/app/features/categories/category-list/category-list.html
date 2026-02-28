@@ -1,0 +1,123 @@
+<div class="categories-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Categories</h2>
+    <div>
+      <a *ngIf="isAdmin" routerLink="/categories/add" class="btn btn-primary">
+        Add New Category
+      </a>
+    </div>
+  </div>
+
+  <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
+    {{ success }}
+    <button type="button" class="btn-close" (click)="success = ''"></button>
+  </div>
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = ''"></button>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="btn-group" role="group">
+            <button class="btn" [class.btn-primary]="selectedType === 'All'"
+              [class.btn-outline-primary]="selectedType !== 'All'" (click)="onTypeChange('All')">
+              All
+            </button>
+            <button class="btn" [class.btn-success]="selectedType === 'Income'"
+              [class.btn-outline-success]="selectedType !== 'Income'" (click)="onTypeChange('Income')">
+              Income
+            </button>
+            <button class="btn" [class.btn-danger]="selectedType === 'Expense'"
+              [class.btn-outline-danger]="selectedType !== 'Expense'" (click)="onTypeChange('Expense')">
+              Expense
+            </button>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Search by Name</label>
+          <input type="text" class="form-control" placeholder="Type to search..." [(ngModel)]="searchText"
+            (ngModelChange)="onFilterChange()">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label fw-bold">From Date</label>
+          <input type="date" class="form-control" [(ngModel)]="startDate" (ngModelChange)="onFilterChange()">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-bold">To Date</label>
+          <input type="date" class="form-control" [(ngModel)]="endDate" (ngModelChange)="onFilterChange()">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button class="btn btn-secondary w-100" (click)="clearFilters()">Clear Filters</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading categories...</p>
+  </div>
+
+  <div *ngIf="!loading" class="card">
+    <div class="card-body">
+      <div *ngIf="filteredCategories.length === 0" class="text-center py-5">
+        <div class="mb-3">
+          <i class="bi bi-tags fs-1 text-muted"></i>
+        </div>
+        <h5 class="text-muted">No categories found</h5>
+        <p class="text-muted mb-3">
+          No categories match your selected filters.
+        </p>
+        <button class="btn btn-outline-primary" (click)="clearFilters()">
+          Clear Filters
+        </button>
+      </div>
+
+      <table *ngIf="filteredCategories.length > 0" class="table table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Created Date</th>
+            <th *ngIf="isAdmin" class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let category of filteredCategories">
+            <td>{{ category.id }}</td>
+            <td>{{ category.name }}</td>
+            <td>
+              <span class="badge" [class.bg-success]="category.type === 'Income'"
+                [class.bg-danger]="category.type === 'Expense'">
+                {{ category.type }}
+              </span>
+            </td>
+            <td>{{ category.createdAt | date:'dd/MM/yyyy' }}</td>
+            <td *ngIf="isAdmin" class="text-center">
+              <a [routerLink]="['/categories/edit', category.id]" class="btn btn-sm btn-warning me-1">
+                Edit
+              </a>
+              <button class="btn btn-sm btn-danger" (click)="deleteCategory(category.id, category.name)">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot class="table-light">
+          <tr>
+            <td colspan="4" class="text-end fw-bold">Total Categories:</td>
+            <td class="text-center fw-bold">{{ filteredCategories.length }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

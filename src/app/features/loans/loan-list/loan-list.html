@@ -1,0 +1,141 @@
+<div class="loan-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Loans</h2>
+    <a routerLink="/loans/add" class="btn btn-primary">Add Loan</a>
+  </div>
+
+  <div *ngIf="success" class="alert alert-success alert-dismissible fade show">
+    {{ success }}
+    <button type="button" class="btn-close" (click)="success = ''"></button>
+  </div>
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = ''"></button>
+  </div>
+
+  <div class="row mb-4" *ngIf="summary">
+    <div class="col-md-3">
+      <div class="card text-white bg-primary">
+        <div class="card-body">
+          <h5 class="card-title">Total Loan</h5>
+          <h3 class="card-text">{{ summary.totalLoaned | currency:'INR' }}</h3>
+          <small>{{ loans.length }} loans</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-warning">
+        <div class="card-body">
+          <h5 class="card-title">Remaining</h5>
+          <h3 class="card-text">{{ summary.totalRemaining | currency:'INR' }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-success">
+        <div class="card-body">
+          <h5 class="card-title">Paid</h5>
+          <h3 class="card-text">{{ summary.totalPaid | currency:'INR' }}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-white bg-danger">
+        <div class="card-body">
+          <h5 class="card-title">Active/Overdue</h5>
+          <h3 class="card-text">{{ summary.activeLoanCount }} / {{ summary.overdueLoanCount }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading loans...</p>
+  </div>
+
+  <div *ngIf="!loading" class="card">
+    <div class="card-body">
+      <div *ngIf="loans.length === 0" class="text-center py-5">
+        <div class="mb-3">
+          <i class="bi bi-bank fs-1 text-muted"></i>
+        </div>
+        <h5 class="text-muted">No loans found</h5>
+        <p class="text-muted mb-3">
+          Add your first loan to get started.
+        </p>
+        <a routerLink="/loans/add" class="btn btn-primary">
+          Add Loan
+        </a>
+      </div>
+
+      <table *ngIf="loans.length > 0" class="table table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Lender</th>
+            <th>Total</th>
+            <th>Remaining</th>
+            <th>Paid</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let loan of loans">
+            <td>{{ loan.lenderName }}</td>
+            <td>{{ loan.totalAmount | currency:'INR' }}</td>
+            <td>
+              <span *ngIf="loan.remainingAmount < 0" class="badge bg-danger">
+                Invalid
+              </span>
+              <span *ngIf="loan.remainingAmount >= 0">
+                {{ loan.remainingAmount | currency:'INR' }}
+              </span>
+            </td>
+            <td style="min-width: 120px;">
+              <div class="progress" style="height: 20px;">
+                <div class="progress-bar bg-success" 
+                     [style.width]="loan.paidPercentage + '%'"
+                     role="progressbar">
+                  {{ loan.paidPercentage | number:'1.0-0' }}%
+                </div>
+              </div>
+            </td>
+            <td>{{ loan.dueDate | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <span [class]="'badge ' + getStatusClass(loan)">
+                {{ getStatusText(loan) }}
+              </span>
+            </td>
+            <td class="text-center">
+              <a [routerLink]="['/loans', loan.id, 'payments']" 
+                 class="btn btn-sm btn-info me-1"
+                 title="View Payments">
+                Payments
+              </a>
+              <a [routerLink]="['/loans/edit', loan.id]" 
+                 class="btn btn-sm btn-warning me-1"
+                 title="Edit">
+                Edit
+              </a>
+              <button class="btn btn-sm btn-danger" 
+                      (click)="deleteLoan(loan.id, loan.lenderName)"
+                      title="Delete">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot class="table-primary">
+          <tr>
+            <td colspan="6" class="text-end fw-bold">Total Outstanding:</td>
+            <td class="text-end fw-bold">{{ summary?.totalRemaining | currency:'INR' }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

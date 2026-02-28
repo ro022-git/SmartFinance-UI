@@ -1,0 +1,55 @@
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">{{ isEditMode ? 'Edit' : 'Add' }} Category</h4>
+        </div>
+        <div class="card-body">
+
+          <div *ngIf="loading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+
+          <form *ngIf="!loading" [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label class="form-label">Category Name</label>
+              <input type="text" class="form-control" formControlName="name">
+              <div *ngIf="submitted && f['name'].errors" class="text-danger mt-1">
+                <div *ngIf="f['name'].errors['required']">Name is required</div>
+                <div *ngIf="f['name'].errors['minlength']">Name must be at least 2 characters</div>
+              </div>
+            </div>
+
+            <div class="mb-3" *ngIf="!isEditMode">
+              <label class="form-label">Type</label>
+              <select class="form-control" formControlName="type">
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+              </select>
+            </div>
+
+            <div class="mb-3" *ngIf="isEditMode">
+              <label class="form-label">Type</label>
+              <input type="text" class="form-control" [value]="categoryForm.get('type')?.value" readonly disabled>
+              <small class="text-muted">Type cannot be changed</small>
+            </div>
+
+            <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+            <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+                {{ isEditMode ? 'Update' : 'Create' }}
+              </button>
+              <button type="button" class="btn btn-secondary" routerLink="/categories">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,5 @@
+.loan-container {
+  padding: 24px;
+  background-color: #f0f7ff;
+  min-height: calc(100vh - 100px);
+}

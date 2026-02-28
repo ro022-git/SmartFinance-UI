@@ -1,0 +1,201 @@
+<div class="dashboard-container">
+  <div class="page-header">
+    <h2>Dashboard</h2>
+    <div class="filter-section">
+      <select class="form-control me-2" [(ngModel)]="selectedYear" (change)="applyFilters()">
+        <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+      </select>
+      
+      <select class="form-control me-2" [(ngModel)]="selectedMonth" (change)="applyFilters()">
+        <option [value]="null">All Months</option>
+        <option value="1">January</option>
+        <option value="2">February</option>
+        <option value="3">March</option>
+        <option value="4">April</option>
+        <option value="5">May</option>
+        <option value="6">June</option>
+        <option value="7">July</option>
+        <option value="8">August</option>
+        <option value="9">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+      
+      <button class="btn btn-outline-secondary" (click)="clearFilters()">Clear</button>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="!loading && summary">
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="summary-card income-card">
+          <div class="card-body">
+            <h6>Total Income</h6>
+            <h3>{{ summary.totalIncome | currency:'INR' }}</h3>
+            <small>{{ summary.incomeCount }} transactions</small>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="summary-card expense-card">
+          <div class="card-body">
+            <h6>Total Expense</h6>
+            <h3>{{ summary.totalExpense | currency:'INR' }}</h3>
+            <small>{{ summary.expenseCount }} transactions</small>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="summary-card balance-card" [class.bg-success]="summary.balance >= 0" [class.bg-danger]="summary.balance < 0">
+          <div class="card-body">
+            <h6>Balance</h6>
+            <h3>{{ summary.balance | currency:'INR' }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="summary-card loan-card">
+          <div class="card-body">
+            <h6>Loan Status</h6>
+            <h3>{{ summary.remainingLoanAmount | currency:'INR' }}</h3>
+            <small>{{ summary.activeLoanCount }} active, {{ summary.overdueLoanCount }} overdue</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="stats-card">
+          <div class="card-header">
+            <h5>Monthly Summary - {{ selectedYear }}</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th class="text-end">Income</th>
+                  <th class="text-end">Expense</th>
+                  <th class="text-end">Savings</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let month of summary.monthlyBreakdown">
+                  <td>{{ month.monthName }}</td>
+                  <td class="text-end text-success">{{ month.income | currency:'INR' }}</td>
+                  <td class="text-end text-danger">{{ month.expense | currency:'INR' }}</td>
+                  <td class="text-end" [class.text-success]="month.savings >= 0" [class.text-danger]="month.savings < 0">
+                    {{ month.savings | currency:'INR' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="stats-card">
+          <div class="card-header bg-success text-white">
+            <h5>Top Income Categories</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="topIncomeCategories.length === 0" class="text-center py-3">
+              No income data
+            </div>
+            <div *ngFor="let cat of topIncomeCategories" class="category-item">
+              <div class="d-flex justify-content-between">
+                <span>{{ cat.categoryName }}</span>
+                <span class="fw-bold text-success">{{ cat.total | currency:'INR' }}</span>
+              </div>
+              <div class="progress mt-1 mb-2">
+                <div class="progress-bar bg-success" [style.width]="cat.percentage + '%'">
+                  {{ cat.percentage | number:'1.0-0' }}%
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="stats-card">
+          <div class="card-header bg-danger text-white">
+            <h5>Top Expense Categories</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="topExpenseCategories.length === 0" class="text-center py-3">
+              No expense data
+            </div>
+            <div *ngFor="let cat of topExpenseCategories" class="category-item">
+              <div class="d-flex justify-content-between">
+                <span>{{ cat.categoryName }}</span>
+                <span class="fw-bold text-danger">{{ cat.total | currency:'INR' }}</span>
+              </div>
+              <div class="progress mt-1 mb-2">
+                <div class="progress-bar bg-danger" [style.width]="cat.percentage + '%'">
+                  {{ cat.percentage | number:'1.0-0' }}%
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12">
+        <div class="stats-card">
+          <div class="card-header bg-info text-white">
+            <h5>Recent Transactions</h5>
+          </div>
+          <div class="card-body">
+            <div *ngIf="recentTransactions.length === 0" class="text-center py-3">
+              No recent transactions
+            </div>
+            <table *ngIf="recentTransactions.length > 0" class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th class="text-end">Amount</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let txn of recentTransactions">
+                  <td>{{ txn.date | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ txn.description }}</td>
+                  <td>{{ txn.categoryName }}</td>
+                  <td class="text-end" [class.text-success]="txn.type === 'Income'" [class.text-danger]="txn.type === 'Expense'">
+                    {{ txn.amount | currency:'INR' }}
+                  </td>
+                  <td>
+                    <span class="badge" [class.bg-success]="txn.type === 'Income'" [class.bg-danger]="txn.type === 'Expense'">
+                      {{ txn.type }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

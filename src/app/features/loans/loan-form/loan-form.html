@@ -1,0 +1,149 @@
+<div class="loan-form-container">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="form-card">
+        <div class="form-card-header">
+          <h2>{{ isEditMode ? 'Edit' : 'Add New' }} Loan</h2>
+          <p class="mb-0">{{ isEditMode ? 'Update loan details' : 'Enter loan information' }}</p>
+        </div>
+
+        <div class="form-card-body">
+          
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="custom-spinner"></div>
+            <p class="mt-3 text-muted">Loading loan details...</p>
+          </div>
+
+          <form *ngIf="!loading" [formGroup]="loanForm" (ngSubmit)="onSubmit()">
+            
+            <div class="form-group mb-4">
+              <label class="form-label">
+                <i class="bi bi-person me-1"></i>
+                Lender Name <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="text" 
+                class="form-control" 
+                formControlName="lenderName"
+                [class.is-invalid]="submitted && f['lenderName'].errors"
+                placeholder="e.g., Bank of America, John Doe">
+              
+              <div *ngIf="submitted && f['lenderName'].errors" class="error-message">
+                <div *ngIf="f['lenderName'].errors['required']">
+                  Lender name is required
+                </div>
+                <div *ngIf="f['lenderName'].errors['minlength']">
+                  Minimum 2 characters required
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group mb-4">
+              <label class="form-label">
+                <i class="bi bi-currency-rupee me-1"></i>
+                Total Amount <span class="text-danger">*</span>
+              </label>
+              <div class="amount-input-group">
+                <span class="currency-symbol">₹</span>
+                <input 
+                  type="number" 
+                  step="1000" 
+                  class="form-control amount-input" 
+                  formControlName="totalAmount"
+                  [class.is-invalid]="submitted && f['totalAmount'].errors"
+                  placeholder="0.00"
+                  (input)="validateAmount()">
+              </div>
+              
+              <div class="amount-suggestions mt-2">
+                <small class="text-muted me-2">Quick:</small>
+                <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="loanForm.patchValue({totalAmount: 5000})">₹5k</button>
+                <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="loanForm.patchValue({totalAmount: 10000})">₹10k</button>
+                <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="loanForm.patchValue({totalAmount: 50000})">₹50k</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" (click)="loanForm.patchValue({totalAmount: 100000})">₹1L</button>
+              </div>
+
+              <div *ngIf="submitted && f['totalAmount'].errors" class="error-message">
+                <div *ngIf="f['totalAmount'].errors['required']">
+                  Amount is required
+                </div>
+                <div *ngIf="f['totalAmount'].errors['min']">
+                  Amount must be greater than 0
+                </div>
+                <div *ngIf="f['totalAmount'].errors['negative']">
+                  Amount cannot be negative
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group mb-4">
+              <label class="form-label">
+                <i class="bi bi-calendar me-1"></i>
+                Due Date <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="date" 
+                class="form-control" 
+                formControlName="dueDate"
+                [class.is-invalid]="submitted && f['dueDate'].errors"
+                [min]="today">
+              
+              <div *ngIf="loanForm.get('dueDate')?.value < today" class="warning-message mt-2">
+                Warning: Due date is in the past
+              </div>
+
+              <div *ngIf="submitted && f['dueDate'].errors" class="error-message">
+                <div *ngIf="f['dueDate'].errors['required']">
+                  Due date is required
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!isEditMode && loanForm.get('totalAmount')?.value > 0" class="summary-preview mb-4">
+              <h6>Loan Summary</h6>
+              <div class="summary-item">
+                <span>Total Amount:</span>
+                <span class="amount">₹{{ loanForm.get('totalAmount')?.value | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-item">
+                <span>Monthly EMI (approx):</span>
+                <span class="amount text-primary">
+                  ₹{{ (loanForm.get('totalAmount')?.value / 12) | number:'1.2-2' }}
+                </span>
+              </div>
+            </div>
+
+            <div *ngIf="success" class="alert alert-success">
+              <i class="bi bi-check-circle me-2"></i>
+              {{ success }}
+            </div>
+            
+            <div *ngIf="error" class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              {{ error }}
+            </div>
+
+            <div class="form-actions">
+              <button 
+                type="submit" 
+                class="btn btn-primary" 
+                [disabled]="submitting">
+                <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+                <i *ngIf="!submitting" class="bi bi-check-circle me-2"></i>
+                {{ isEditMode ? 'Update Loan' : 'Create Loan' }}
+              </button>
+              
+              <button 
+                type="button" 
+                class="btn btn-secondary" 
+                routerLink="/loans">
+                <i class="bi bi-x-circle me-2"></i>
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
